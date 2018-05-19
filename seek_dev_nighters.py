@@ -1,3 +1,5 @@
+import requests
+
 def load_attempts():
     pages = 1
     for page in range(pages):
