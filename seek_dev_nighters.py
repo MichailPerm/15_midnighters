@@ -5,26 +5,24 @@ from datetime import datetime
 API_URL = 'https://devman.org/api/challenges/solution_attempts/'
 
 
-def get_pages_quantity():
-    response = requests.get(API_URL)
-    page_data = response.json()
-    return page_data.get('number_of_pages')
-
-
 def load_attempts():
-    pages = get_pages_quantity()
-    for page in range(1, pages):
+    pages = 1
+    page = 1
+    while page <= pages:
         response = requests.get(API_URL, params={'page': page})
         page_data = response.json()
+        pages = page_data.get('number_of_pages')
         records = page_data.get('records')
         for record in records:
             yield record
+        page += 1
 
 
-def check_if_time_in_range(timezone, timestamp):
+def is_time_in_range(timezone, timestamp):
+    midnight_hour = 0
+    morning_hour = 6
     user_hour = datetime.fromtimestamp(timestamp, pytz.timezone(timezone)).hour
-    if 0 < user_hour < 6:
-        return True
+    return midnight_hour < user_hour < morning_hour
 
 
 def get_midnighters(attempts):
@@ -32,7 +30,7 @@ def get_midnighters(attempts):
     for record in attempts():
         if not record:
             break
-        if check_if_time_in_range(
+        if is_time_in_range(
                 record.get('timezone'),
                 record.get('timestamp')
         ):
